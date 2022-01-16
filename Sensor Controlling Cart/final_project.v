@@ -50,7 +50,7 @@ module final_project(
     wire [3:0] num0, num1, num2, num3;
     reg [3:0] num00, num11, num22, num33;
     
-    clock_divider #(.n(29)) clk_20(clk, clk20_en, clk20);
+    clock_divider #(.n(23)) clk_20(clk, clk20_en, clk20);
 
     motor A(
         .clk(clk),
