@@ -41,7 +41,7 @@ module final_project(
     reg sevenSeg;
     reg turnControl;
 
-    wire primaryRxD;
+    // wire primaryRxD;
     wire [7:0] RxData;
     wire [19:0] distance;
     wire [15:0] BCD;
@@ -55,7 +55,8 @@ module final_project(
     motor A(
         .clk(clk),
         .rst(rst),
-        .mode(3'b000),
+        // .mode(3'b000),
+        .mode(mode),
         .pwm({left_pwm, right_pwm}),
         .l_IN({IN1, IN2}),
         .r_IN({IN3, IN4})
@@ -72,8 +73,7 @@ module final_project(
     bluetooth C(
         .clk(clk),
         .rst(rst),
-        .RxD(primaryRxD),
-        .notEn(clk20),
+        .RxD(RxD),
         .RxData(RxData)
     );
 
@@ -101,14 +101,15 @@ module final_project(
 
     assign led = {mode, 11'd0, type};
     // assign primaryRxD = !rst && !clk20 ? RxD : 8'd0;
-    assign primaryRxD = RxD;
+    // assign primaryRxD = RxD;
     
     assign num0 = RxData % 10;
     assign num1 = (RxData/10) % 10;
     assign num2 = (RxData/100) % 10;
     assign num3 = (RxData/1000) % 10;
 
-    assign BCD = 1'b1 ? {num3, num2, num1, num0} : 16'd0;
+    // assign BCD = 1'b1 ? {num3, num2, num1, num0} : 16'd0;
+    assign BCD = sevenSeg ? {num3, num2, num1, num0} : 16'd0;
     
     always@(posedge clk, posedge rst) begin
         if(rst) type <= 2'b01;
@@ -138,9 +139,9 @@ module final_project(
     always@(posedge clk, posedge rst) begin
         if(rst) begin
             mode <= 3'b000;
-            clk20_en = 0;
-            sevenSeg = 0;
-            turnControl = 0;
+            clk20_en <= 0;
+            sevenSeg <= 0;
+            turnControl <= 0;
         end else begin
             mode <= 3'b000;
             case(type)
@@ -158,36 +159,42 @@ module final_project(
                 2'b10 : begin
                     if((num2 == 1) && (num1 == 1) && (num0 == 1) && (distance > 20)) begin
                         mode <= 3'b011;  // forward
-                        sevenSeg = 1;
-                        turnControl = 0;
+                        sevenSeg <= 1;
+                        turnControl <= 0;
+                        clk20_en <= 0;
                     end else if((num2 == 2) && (num1 == 4) && (num0 == 7)) begin
-                        clk20_en = 1;
+
+                        clk20_en <= 1;        // start turn duration
                         if(turnControl == 0)begin
-                            mode <= 3'b001;  // left
+                            mode <= 3'b010;  // left
                         end
-                        sevenSeg = 1;
+                        sevenSeg <= 1;      // show BCD
                         if(clk20)begin
-                            clk20_en = 0;
-                            turnControl = 1;
+                            clk20_en <= 0;
+                            turnControl <= 1;       // to turn or not
                         end
+
                     end else if((num2 == 2) && (num1 == 5) && (num0 == 5)) begin
-                        clk20_en = 1;
+                        clk20_en <= 1;        // start turn duration
                         if(turnControl == 0)begin
-                            mode <= 3'b010;  // right
+                            mode <= 3'b001;  // right
                         end
-                        sevenSeg = 1;
+                        sevenSeg <= 1;      // show BCD
                         if(clk20)begin
-                            clk20_en = 0;
-                            turnControl = 1;
+                            clk20_en <= 0;
+                            turnControl <= 1;       // to turn or not
                         end
-                    end else if((num2 == 2) && (num1 == 5) && (num0 == 1)) begin
+
+                    end else if((num2 == 2) && (num1 == 5) && (num0 == 1) && (distance > 20)) begin
                         mode <= 3'b100;  // backward 
-                        sevenSeg = 1;
-                        turnControl = 0;
+                        sevenSeg <= 1;
+                        turnControl <= 0;
+                        clk20_en <= 0;
                     end else begin
                         mode <= 3'b000;  // stop
-                        sevenSeg = 0;
-                        turnControl = 0;
+                        sevenSeg <= 0;
+                        turnControl <= 0;
+                        clk20_en <= 0;
                     end
                 end
             endcase
