@@ -1,6 +1,6 @@
 module IRSensor (
-    input clk,
-    input rst,
+    // input clk,
+    // input rst,
     input Sense_,
     // output reg obstacles_
     output wire obstacles_
