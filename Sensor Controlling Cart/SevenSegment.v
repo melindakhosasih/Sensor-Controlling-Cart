@@ -9,8 +9,12 @@ module SevenSegment(
     reg [15:0] clk_divider;
     reg [3:0] display_num;
     
-    always @ (posedge clk) begin
-    	clk_divider <= clk_divider + 15'b1;
+    always @ (posedge clk, posedge rst) begin
+		if(rst)begin
+		  clk_divider <= 0;
+		end else begin
+			clk_divider <= clk_divider + 15'b1;
+		end
     end
     
     always @ (posedge clk_divider[15]) begin
