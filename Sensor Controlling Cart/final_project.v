@@ -32,6 +32,12 @@ module final_project(
     input IRSenseR,
     input IRSenseBL,
     input IRSenseBR,
+
+    output audio_mclk, 
+    output audio_lrck, 
+    output audio_sck, 
+    output audio_sdin,
+
     output trig,
     output IN1,
     output IN2,
@@ -49,6 +55,7 @@ module final_project(
     reg clk_blink_en;
     reg sevenSeg;
     reg turnControl;
+    reg play_sound;
     reg [10:0] blink_;
 
     wire [7:0] RxData;
@@ -61,6 +68,12 @@ module final_project(
     wire clk_turn, clk_u_turn, clk_rotate;
     wire clk_blink;
     wire pause, pause1;
+    wire clk21;
+
+    wire [15:0] audio_in_left, audio_in_right; // Internal Signal
+    wire [11:0] ibeatNum;               // Beat counter
+    wire [31:0] freqL, freqR;           // Raw frequency
+    wire [21:0] freq_outL, freq_outR;    // Processed frequency, adapted to the clock rate of Basys3
 
     motor A(
         .clk(clk),
@@ -96,29 +109,21 @@ module final_project(
     );
     
     IRSensor E(
-        .clk(clk),
-        .rst(rst),
         .Sense_(IRSenseL),
         .obstacles_(IRSignL)
     );
 
     IRSensor F(
-        .clk(clk),
-        .rst(rst),
         .Sense_(IRSenseR),
         .obstacles_(IRSignR)
     );
 
     IRSensor E1(
-        .clk(clk),
-        .rst(rst),
         .Sense_(IRSenseBL),
         .obstacles_(IRSignBL)
     );
 
     IRSensor F1(
-        .clk(clk),
-        .rst(rst),
         .Sense_(IRSenseBR),
         .obstacles_(IRSignBR)
     );
@@ -130,14 +135,14 @@ module final_project(
         .clk_div(clk_turn)
     );
 
-    clock_divider #(.n(28)) H ( // u_turn_duration
+    clock_divider #(.n(27)) H ( // u_turn_duration
         .clk(clk),
         .en(clk_u_turn_en), // add distance pause
         .pause(pause),  // pause the duration from keep counting if there's obstacle
         .clk_div(clk_u_turn)
     );
 
-    clock_divider #(.n(29)) I ( // rotate_duration
+    clock_divider #(.n(28)) I ( // rotate_duration
         .clk(clk),
         .en(clk_rotate_en), // add distance pause
         .pause(pause),  // pause the duration from keep counting if there's obstacle
@@ -150,6 +155,51 @@ module final_project(
         .pause(0),
         .clk_div(clk_blink)
     );
+
+    clock_divider #(.n(22)) K ( // speaker
+        .clk(clk),
+        .en(play_sound),
+        .pause(0),
+        .clk_div(clk21)
+    );
+
+    player_control #(.LEN(30)) L ( 
+        .clk(clk21),
+        .reset(rst),
+        .en(play_sound),
+        .ibeat(ibeatNum)
+    );
+
+    assign freq_outL = 50000000 / freqL;
+    assign freq_outR = 50000000 / freqR;
+
+    note_gen M(
+        .clk(clk), 
+        .rst(rst), 
+        .note_div_left(freq_outL), 
+        .note_div_right(freq_outR), 
+        .audio_left(audio_in_left),     // left sound audio
+        .audio_right(audio_in_right)    // right sound audio
+    );
+
+    speaker_control N(
+        .clk(clk), 
+        .rst(rst), 
+        .audio_in_left(audio_in_left),      // left channel audio data input
+        .audio_in_right(audio_in_right),    // right channel audio data input
+        .audio_mclk(audio_mclk),            // master clock
+        .audio_lrck(audio_lrck),            // left-right clock
+        .audio_sck(audio_sck),              // serial clock
+        .audio_sdin(audio_sdin)             // serial audio data input
+    );
+
+    sound O (
+        .ibeatNum(ibeatNum),
+        .en(play_sound),
+        .toneL(freqL),
+        .toneR(freqR)
+    );
+
 
     assign led = {mode, (!clk_blink && clk_blink_en) ? 11'b1111_1111_111 : 11'd0, type};
     assign pause = (distance < 20) ? 1'b1 : 1'b0;
@@ -201,7 +251,9 @@ module final_project(
             clk_u_turn_en <= 0;
             clk_rotate_en <= 0;
             sevenSeg <= 0;
+            play_sound <= 0;
             turnControl <= 0;
+            clk_blink_en <= 0;
         end else begin
             mode <= 3'b000;
             case(type)
@@ -350,6 +402,16 @@ module final_project(
                 end else begin
                     mode <= 3'b000; //forward
                 end
+                if(type == 2'b10)begin
+                    clk_blink_en <= 1;
+                    play_sound <= 1;
+                end else begin
+                    clk_blink_en <= 0;
+                    play_sound <= 0;
+                end
+            end else begin
+                clk_blink_en <= 0;
+                play_sound <= 0;
             end
             // if(pause1)begin
             //     mode <= 3'b000; //backward
@@ -357,15 +419,6 @@ module final_project(
         end
     end
 
-    always@(*)begin
-    //   if((pause || pause1) && type == 2'b10)begin
-      if(pause && type == 2'b10)begin
-        clk_blink_en <= 1;
-      end else begin
-        clk_blink_en <= 0;
-      end
-    end
-
 endmodule
 
-// 156, 261, 347, 354-356/
+// 156, 261, 347, 354-356
