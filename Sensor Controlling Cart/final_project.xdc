@@ -184,12 +184,12 @@ set_property PACKAGE_PIN C16 [get_ports {RxD}]
 ## Sch name = JC2
 # set_property PACKAGE_PIN M18 [get_ports {JC[1]}]
 #    set_property IOSTANDARD LVCMOS33 [get_ports {JC[1]}]
-## Sch name = JC3
-# set_property PACKAGE_PIN N17 [get_ports {JC[2]}]
-#    set_property IOSTANDARD LVCMOS33 [get_ports {JC[2]}]
-## Sch name = JC4
-# set_property PACKAGE_PIN P18 [get_ports {IRSenseR}]
-#    set_property IOSTANDARD LVCMOS33 [get_ports {IRSenseR}]
+# Sch name = JC3
+# set_property PACKAGE_PIN N17 [get_ports {trig1}]
+#    set_property IOSTANDARD LVCMOS33 [get_ports {trig1}]
+# Sch name = JC4
+set_property PACKAGE_PIN P18 [get_ports {IRSenseBR}]
+   set_property IOSTANDARD LVCMOS33 [get_ports {IRSenseBR}]
 ## Sch name = JC7
 # set_property PACKAGE_PIN L17 [get_ports {JC[4]}]
 #    set_property IOSTANDARD LVCMOS33 [get_ports {JC[4]}]
@@ -215,8 +215,8 @@ set_property PACKAGE_PIN R18 [get_ports {IRSenseR}]
 # set_property PACKAGE_PIN M2 [get_ports {ble_tx}]
 #    set_property IOSTANDARD LVCMOS33 [get_ports {ble_tx}]
 ## Sch name = XA4_P
-# set_property PACKAGE_PIN N2 [get_ports {IRSenseR}]
-#   set_property IOSTANDARD LVCMOS33 [get_ports {IRSenseR}]
+set_property PACKAGE_PIN N2 [get_ports {IRSenseBL}]
+  set_property IOSTANDARD LVCMOS33 [get_ports {IRSenseBL}]
 #   set_property PULLUP true [get_ports ble_rx]
 ## Sch name = XA1_N
 # set_property PACKAGE_PIN K3 [get_ports {JXADC[4]}]
