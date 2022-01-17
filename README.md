@@ -1,1 +1,6 @@
-# Sensor-Controlling-Cart
+undone:
+
+- additional IR sensor
+- fpga connect
+- ppt 
+- design 
