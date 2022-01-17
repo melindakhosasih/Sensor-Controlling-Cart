@@ -122,7 +122,7 @@ set_property IOSTANDARD LVCMOS33 [get_ports {led[15]}]
 
 
 ## Pmod Header JA
-# Sch name = JA1
+# # Sch name = JA1
  set_property PACKAGE_PIN J1 [get_ports {IN1}]
     set_property IOSTANDARD LVCMOS33 [get_ports {IN1}]
 # Sch name = JA2
@@ -140,12 +140,12 @@ set_property IOSTANDARD LVCMOS33 [get_ports {led[15]}]
 # Sch name = JA8
  set_property PACKAGE_PIN K2 [get_ports {right_pwm}]
     set_property IOSTANDARD LVCMOS33 [get_ports {right_pwm}]
-# # Sch name = JA9
-# set_property PACKAGE_PIN H2 [get_ports {echo}]
-#    set_property IOSTANDARD LVCMOS33 [get_ports {echo}]
-# # Sch name = JA10
-# set_property PACKAGE_PIN G3 [get_ports {trig}]
-#    set_property IOSTANDARD LVCMOS33 [get_ports {trig}]
+# # # Sch name = JA9
+# # set_property PACKAGE_PIN H2 [get_ports {echo}]
+# #    set_property IOSTANDARD LVCMOS33 [get_ports {echo}]
+# # # Sch name = JA10
+# # set_property PACKAGE_PIN G3 [get_ports {trig}]
+# #    set_property IOSTANDARD LVCMOS33 [get_ports {trig}]
 
 
 
@@ -177,19 +177,33 @@ set_property PACKAGE_PIN C16 [get_ports {RxD}]
 
 
 
+#  J1 [get_ports {audio_mclk}]
+#     set_property IOSTANDARD LVCMOS33 [get_ports {audio_mclk}]
+# # Sch name = JA2
+#  set_property PACKAGE_PIN L2 [get_ports {audio_lrck}]
+#     set_property IOSTANDARD LVCMOS33 [get_ports {audio_lrck}]
+# # Sch name = JA3
+#  set_property PACKAGE_PIN J2 [get_ports {audio_sck}]
+#     set_property IOSTANDARD LVCMOS33 [get_ports {audio_sck}]
+# # Sch name = JA4
+#  set_property PACKAGE_PIN G2 [get_ports {audio_sdin}]
+#     set_property IOSTANDARD LVCMOS33 [get_ports {audio_sdin}]
+
 ## Pmod Header JC
 ## Sch name = JC1
-# set_property PACKAGE_PIN K17 [get_ports {JC[0]}]
-#    set_property IOSTANDARD LVCMOS33 [get_ports {JC[0]}]
-## Sch name = JC2
-# set_property PACKAGE_PIN M18 [get_ports {JC[1]}]
-#    set_property IOSTANDARD LVCMOS33 [get_ports {JC[1]}]
+set_property PACKAGE_PIN K17 [get_ports {audio_mclk}]
+   set_property IOSTANDARD LVCMOS33 [get_ports {audio_mclk}]
+# Sch name = JC2
+set_property PACKAGE_PIN M18 [get_ports {audio_lrck}]
+   set_property IOSTANDARD LVCMOS33 [get_ports {audio_lrck}]
 # Sch name = JC3
-# set_property PACKAGE_PIN N17 [get_ports {trig1}]
-#    set_property IOSTANDARD LVCMOS33 [get_ports {trig1}]
+set_property PACKAGE_PIN N17 [get_ports {audio_sck}]
+   set_property IOSTANDARD LVCMOS33 [get_ports {audio_sck}]
 # Sch name = JC4
-set_property PACKAGE_PIN P18 [get_ports {IRSenseBR}]
-   set_property IOSTANDARD LVCMOS33 [get_ports {IRSenseBR}]
+set_property PACKAGE_PIN P18 [get_ports {audio_sdin}]
+   set_property IOSTANDARD LVCMOS33 [get_ports {audio_sdin}]
+# set_property PACKAGE_PIN P18 [get_ports {IRSenseBR}]
+#    set_property IOSTANDARD LVCMOS33 [get_ports {IRSenseBR}]
 ## Sch name = JC7
 # set_property PACKAGE_PIN L17 [get_ports {JC[4]}]
 #    set_property IOSTANDARD LVCMOS33 [get_ports {JC[4]}]
@@ -200,8 +214,8 @@ set_property PACKAGE_PIN P18 [get_ports {IRSenseBR}]
 # set_property PACKAGE_PIN P17 [get_ports {JC[6]}]
 #    set_property IOSTANDARD LVCMOS33 [get_ports {JC[6]}]
 ## Sch name = JC10
-set_property PACKAGE_PIN R18 [get_ports {IRSenseR}]
-   set_property IOSTANDARD LVCMOS33 [get_ports {IRSenseR}]
+# set_property PACKAGE_PIN R18 [get_ports {IRSenseR}]
+#    set_property IOSTANDARD LVCMOS33 [get_ports {IRSenseR}]
 
 
 ## Pmod Header JXADC
@@ -215,8 +229,10 @@ set_property PACKAGE_PIN R18 [get_ports {IRSenseR}]
 # set_property PACKAGE_PIN M2 [get_ports {ble_tx}]
 #    set_property IOSTANDARD LVCMOS33 [get_ports {ble_tx}]
 ## Sch name = XA4_P
-set_property PACKAGE_PIN N2 [get_ports {IRSenseBL}]
-  set_property IOSTANDARD LVCMOS33 [get_ports {IRSenseBL}]
+set_property PACKAGE_PIN N2 [get_ports {IRSenseR}]
+  set_property IOSTANDARD LVCMOS33 [get_ports {IRSenseR}]
+#   set_property PACKAGE_PIN N2 [get_ports {IRSenseBL}]
+#   set_property IOSTANDARD LVCMOS33 [get_ports {IRSenseBL}]
 #   set_property PULLUP true [get_ports ble_rx]
 ## Sch name = XA1_N
 # set_property PACKAGE_PIN K3 [get_ports {JXADC[4]}]
