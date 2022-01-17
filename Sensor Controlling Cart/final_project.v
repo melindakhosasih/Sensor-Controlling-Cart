@@ -30,6 +30,8 @@ module final_project(
     input [1:0] sw,
     input IRSenseL,
     input IRSenseR,
+    input IRSenseBL,
+    input IRSenseBR,
     output trig,
     output IN1,
     output IN2,
@@ -44,18 +46,21 @@ module final_project(
     reg [2:0] mode;
     reg [1:0] type, next_type;
     reg clk_turn_en, clk_u_turn_en, clk_rotate_en;
+    reg clk_blink_en;
     reg sevenSeg;
     reg turnControl;
+    reg [10:0] blink_;
 
-    // wire primaryRxD;
     wire [7:0] RxData;
     wire [19:0] distance;
+    wire [19:0] distance1;
     wire [15:0] BCD;
     wire [3:0] num0, num1, num2, num3;
-    //reg [3:0] num00, num11, num22, num33;
     wire IRSignL, IRSignR;
+    wire IRSignBL, IRSignBR;
     wire clk_turn, clk_u_turn, clk_rotate;
-    wire pause;
+    wire clk_blink;
+    wire pause, pause1;
 
     motor A(
         .clk(clk),
@@ -67,7 +72,7 @@ module final_project(
         .r_IN({IN3, IN4})
     );
 
-    sonic_top B(
+    sonic_top B0(
         .clk(clk), 
         .rst(rst), 
         .Echo(echo), 
@@ -91,17 +96,31 @@ module final_project(
     );
     
     IRSensor E(
-        // .clk(clk),
-        // .rst(rst),
+        .clk(clk),
+        .rst(rst),
         .Sense_(IRSenseL),
         .obstacles_(IRSignL)
     );
 
     IRSensor F(
-        // .clk(clk),
-        // .rst(rst),
+        .clk(clk),
+        .rst(rst),
         .Sense_(IRSenseR),
         .obstacles_(IRSignR)
+    );
+
+    IRSensor E1(
+        .clk(clk),
+        .rst(rst),
+        .Sense_(IRSenseBL),
+        .obstacles_(IRSignBL)
+    );
+
+    IRSensor F1(
+        .clk(clk),
+        .rst(rst),
+        .Sense_(IRSenseBR),
+        .obstacles_(IRSignBR)
     );
 
     clock_divider #(.n(26)) G ( // turn_duration
@@ -111,24 +130,30 @@ module final_project(
         .clk_div(clk_turn)
     );
 
-    clock_divider #(.n(27)) H ( // u_turn_duration
+    clock_divider #(.n(28)) H ( // u_turn_duration
         .clk(clk),
         .en(clk_u_turn_en), // add distance pause
         .pause(pause),  // pause the duration from keep counting if there's obstacle
         .clk_div(clk_u_turn)
     );
 
-    clock_divider #(.n(28)) I ( // rotate_duration
+    clock_divider #(.n(29)) I ( // rotate_duration
         .clk(clk),
         .en(clk_rotate_en), // add distance pause
         .pause(pause),  // pause the duration from keep counting if there's obstacle
         .clk_div(clk_rotate)
     );
 
-    assign led = {mode, 11'd0, type};
+    clock_divider #(.n(25)) J ( // obstacles
+        .clk(clk),
+        .en(clk_blink_en),
+        .pause(0),
+        .clk_div(clk_blink)
+    );
+
+    assign led = {mode, (!clk_blink && clk_blink_en) ? 11'b1111_1111_111 : 11'd0, type};
     assign pause = (distance < 20) ? 1'b1 : 1'b0;
-    // assign primaryRxD = !rst && !clk_turn ? RxD : 8'd0;
-    // assign primaryRxD = RxD;
+    // assign pause1 = (IRSignBL || IRSignBR) ? 1'b1 : 1'b0;
     
     assign num0 = RxData % 10;
     assign num1 = (RxData/10) % 10;
@@ -136,7 +161,8 @@ module final_project(
     assign num3 = (RxData/1000) % 10;
 
     // assign BCD = 1'b1 ? {num3, num2, num1, num0} : 16'd0;
-    assign BCD = sevenSeg ? {num3, num2, num1, num0} : 16'd0;
+    assign BCD = !clk_blink_en ? (sevenSeg ? {num3, num2, num1, num0} : 16'd0) : 
+                                (!clk_blink ? {4'd10, 4'd10, 4'd10, 4'd10} : {4'd11, 4'd11, 4'd11, 4'd11});
     
     always@(posedge clk, posedge rst) begin
         if(rst) type <= 2'b01;
@@ -156,13 +182,17 @@ module final_project(
         end
     end
 
+    ///////////////////////////////
     // speech:
-    // go
-    // move backward
-    // turn left
-    // turn right
-    // stop
-    // u-turn
+    //      go
+    //      move backward
+    //      turn left
+    //      right
+    //      stop
+    //      u-turn
+    //      hi
+    //      goodbye
+    ////////////////////////////////
 
     always@(posedge clk, posedge rst) begin
         if(rst) begin
@@ -202,14 +232,16 @@ module final_project(
                         if(turnControl == 0) begin
                             mode <= 3'b010;  // left
                         end else begin
-                            mode <= 3'b011; //forward
+                            mode <= 3'b000; //stop
+                            // mode <= 3'b011; //forward
                         end
                         if(clk_turn) begin
                             clk_turn_en <= 0;
                             turnControl <= 1;       // to turn or not
                             //mode <= 3'b011; // forward
                         end
-                    end else if((num2 == 2) && (num1 == 5) && (num0 == 5)) begin    // turn right
+                    // end else if((num2 == 2) && (num1 == 5) && (num0 == 5)) begin    // turn right
+                    end else if((num2 == 1) && (num1 == 8) && (num0 == 6)) begin    // turn right
                         clk_turn_en <= 1;        // start turn duration
                         clk_u_turn_en <= 0;
                         clk_rotate_en <= 0;
@@ -217,7 +249,8 @@ module final_project(
                         if(turnControl == 0) begin
                             mode <= 3'b001;  // right
                         end else begin
-                            mode <= 3'b011;  // forward
+                            mode <= 3'b000; //stop
+                            // mode <= 3'b011;  // forward
                         end
                         if(clk_turn) begin
                             clk_turn_en <= 0;
@@ -225,6 +258,7 @@ module final_project(
                             //mode <= 3'b011; // forward
                         end
                     end else if((num2 == 2) && (num1 == 5) && (num0 == 1)) begin // backward
+                    // end else if((num2 == 2) && (num1 == 5) && (num0 == 1) && !IRSignBL && !IRSignBR) begin // backward
                         mode <= 3'b100;  // backward 
                         sevenSeg <= 1;
                         turnControl <= 0;
@@ -239,7 +273,8 @@ module final_project(
                         if(turnControl == 0) begin
                             mode <= 3'b010;  // left
                         end else begin
-                            mode <= 3'b011;  // forward
+                            mode <= 3'b000; //stop
+                            // mode <= 3'b011;  // forward
                         end
                         if(clk_u_turn) begin
                             clk_u_turn_en <= 1'b0;
@@ -277,6 +312,8 @@ module final_project(
                         sevenSeg <= 1;      // show BCD
                         if(turnControl == 0) begin
                             mode <= 3'b010;  // left
+                        end else begin
+                            mode <= 3'b000; //stop
                         end
                         if(clk_rotate) begin
                             clk_rotate_en <= 0;
@@ -289,6 +326,8 @@ module final_project(
                         sevenSeg <= 1;      // show BCD
                         if(turnControl == 0) begin
                             mode <= 3'b001;  // right
+                        end else begin
+                            mode <= 3'b000; //stop
                         end
                         if(clk_rotate) begin
                             clk_rotate_en <= 0;
@@ -305,13 +344,28 @@ module final_project(
                 end
             endcase
             if(pause) begin
+                // if(mode != 3'b011 && mode != 3'b000 && turnControl != 1'b1 && !IRSignBR && !IRSignBL) begin
                 if(mode != 3'b011 && mode != 3'b000 && turnControl != 1'b1) begin
                     mode <= 3'b100; // backward
                 end else begin
                     mode <= 3'b000; //forward
                 end
             end
+            // if(pause1)begin
+            //     mode <= 3'b000; //backward
+            // end
         end
     end
 
+    always@(*)begin
+    //   if((pause || pause1) && type == 2'b10)begin
+      if(pause && type == 2'b10)begin
+        clk_blink_en <= 1;
+      end else begin
+        clk_blink_en <= 0;
+      end
+    end
+
 endmodule
+
+// 158, 263, 364, 356-358
