@@ -204,7 +204,8 @@ module final_project(
     assign led = {mode, (!clk_blink && clk_blink_en) ? 11'b1111_1111_111 : 11'd0, type};
     assign pause = (distance < 20) ? 1'b1 : 1'b0;
     // assign pause1 = (IRSignBL || IRSignBR) ? 1'b1 : 1'b0;
-    
+    assign pause1 = (IRSignBR) ? 1'b1 : 1'b0;
+
     assign num0 = RxData % 10;
     assign num1 = (RxData/10) % 10;
     assign num2 = (RxData/100) % 10;
@@ -256,27 +257,29 @@ module final_project(
             clk_blink_en <= 0;
         end else begin
             mode <= 3'b000;
+            clk_blink_en <= 0;
+            play_sound <= 0;
             case(type)
                 2'b01 : begin
                     if((distance > 15) && (distance < 60) && IRSignL && IRSignR) begin
                         mode <= 3'b011; // forward
-                    end else if((distance > 15) && (distance < 60) && IRSignL) begin
+                    end else if(((distance > 15) && (distance < 60) && IRSignL) || (IRSignL && distance > 15)) begin
                         mode <= 3'b010; // left
-                    end else if((distance > 15) && (distance < 60) && IRSignR) begin
+                    end else if(((distance > 15) && (distance < 60) && IRSignR) || (IRSignR && distance > 15)) begin
                         mode <= 3'b001; // right
                     end else begin
                         mode <= 3'b000; // stop
                     end
                 end
                 2'b10 : begin
-                    if((num2 == 1) && (num1 == 1) && (num0 == 1)) begin  // forward
+                    if(RxData == 111) begin  // forward
                         mode <= 3'b011;  // forward
                         sevenSeg <= 1;
                         turnControl <= 0;
                         clk_turn_en <= 0;
                         clk_u_turn_en <= 0;
                         clk_rotate_en <= 0;
-                    end else if((num2 == 2) && (num1 == 4) && (num0 == 7)) begin    // turn left
+                    end else if(RxData == 247) begin    // turn left
                         clk_turn_en <= 1;        // start turn duration
                         clk_u_turn_en <= 0;
                         clk_rotate_en <= 0;
@@ -293,7 +296,7 @@ module final_project(
                             //mode <= 3'b011; // forward
                         end
                     // end else if((num2 == 2) && (num1 == 5) && (num0 == 5)) begin    // turn right
-                    end else if((num2 == 1) && (num1 == 8) && (num0 == 6)) begin    // turn right
+                    end else if(RxData == 186) begin    // turn right
                         clk_turn_en <= 1;        // start turn duration
                         clk_u_turn_en <= 0;
                         clk_rotate_en <= 0;
@@ -309,7 +312,7 @@ module final_project(
                             turnControl <= 1;       // to turn or not
                             //mode <= 3'b011; // forward
                         end
-                    end else if((num2 == 2) && (num1 == 5) && (num0 == 1)) begin // backward
+                    end else if(RxData == 251) begin // backward
                     // end else if((num2 == 2) && (num1 == 5) && (num0 == 1) && !IRSignBL && !IRSignBR) begin // backward
                         mode <= 3'b100;  // backward 
                         sevenSeg <= 1;
@@ -317,7 +320,7 @@ module final_project(
                         clk_turn_en <= 0;
                         clk_u_turn_en <= 0;
                         clk_rotate_en <= 0;
-                    end else if((num2 == 1) && (num1 == 8) && (num0 == 3)) begin // u-turn
+                    end else if(RxData == 183) begin // u-turn
                         clk_turn_en <= 0;        // start turn duration
                         clk_u_turn_en <= 1;     // start u-turn duration
                         clk_rotate_en <= 0;
@@ -357,7 +360,7 @@ module final_project(
                     //         clk_turn_en <= 0;
                     //         turnControl <= 1;       // to turn or not
                     //     end
-                    end else if((num2 == 1) && (num1 == 0) && (num0 == 5)) begin    // rotate left  hi
+                    end else if(RxData == 105) begin    // rotate left  hi
                         clk_turn_en <= 0;        // start turn duration
                         clk_u_turn_en <= 0;
                         clk_rotate_en <= 1;
@@ -371,7 +374,7 @@ module final_project(
                             clk_rotate_en <= 0;
                             turnControl <= 1;       // to turn or not
                         end
-                    end else if((num2 == 2) && (num1 == 1) && (num0 == 7)) begin    // rotate right goodbye
+                    end else if(RxData == 217) begin    // rotate right goodbye
                         clk_turn_en <= 0;        // start turn duration
                         clk_u_turn_en <= 0;
                         clk_rotate_en <= 1;
@@ -393,29 +396,26 @@ module final_project(
                         clk_u_turn_en <= 0;
                         clk_rotate_en <= 0;
                     end
+                    if(pause) begin
+                        // if(mode != 3'b011 && mode != 3'b000 && turnControl != 1'b1 && !IRSignBR && !IRSignBL) begin
+                        if(mode != 3'b011 && mode != 3'b000 && turnControl != 1'b1) begin
+                            mode <= 3'b100; // backward
+                        end else begin
+                            mode <= 3'b000; //forward
+                        end
+                        if(pause1) begin
+                            clk_blink_en <= 1;
+                            play_sound <= 1;
+                        end
+                        if(pause1) begin
+                            mode <= 3'b000;
+                        end
+                    end
+                    if(pause1 && mode == 3'b100) begin
+                        mode <= 3'b000;
+                    end
                 end
             endcase
-            if(pause) begin
-                // if(mode != 3'b011 && mode != 3'b000 && turnControl != 1'b1 && !IRSignBR && !IRSignBL) begin
-                if(mode != 3'b011 && mode != 3'b000 && turnControl != 1'b1) begin
-                    mode <= 3'b100; // backward
-                end else begin
-                    mode <= 3'b000; //forward
-                end
-                if(type == 2'b10)begin
-                    clk_blink_en <= 1;
-                    play_sound <= 1;
-                end else begin
-                    clk_blink_en <= 0;
-                    play_sound <= 0;
-                end
-            end else begin
-                clk_blink_en <= 0;
-                play_sound <= 0;
-            end
-            // if(pause1)begin
-            //     mode <= 3'b000; //backward
-            // end
         end
     end
 
