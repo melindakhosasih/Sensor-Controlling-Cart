@@ -22,6 +22,77 @@ module clock_divider #(parameter n = 26)(
     assign clk_div = pause ? 0 : num[n];
 endmodule
 
+module clock_divider_rotate #(parameter n = 26)(
+    input clk, 
+    input en,
+    input pause,
+    output clk_div
+);
+    reg [n:0] num = 0;
+    wire [n:0] next_num;
+
+    always@(posedge clk) begin
+        if(!en) begin
+            num <= 0;
+        end else begin
+            if(!pause) begin
+                num <= next_num;
+            end
+        end
+    end
+
+    assign next_num = (num != 300_000_000) ? (num + 1) : 0;
+    //assign clk_div = num[n];
+    assign clk_div = pause ? 0 : (num < 150_000_000) ? 0 : 1;
+endmodule
+
+module clock_divider_turn #(parameter n = 26)(
+    input clk, 
+    input en,
+    input pause,
+    output clk_div
+);
+    reg [n:0] num = 0;
+    wire [n:0] next_num;
+
+    always@(posedge clk) begin
+        if(!en) begin
+            num <= 0;
+        end else begin
+            if(!pause) begin
+                num <= next_num;
+            end
+        end
+    end
+
+    assign next_num = (num != 100_000_000) ? (num + 1) : 0;
+    //assign clk_div = num[n];
+    assign clk_div = pause ? 0 : (num < 50_000_000) ? 0 : 1;
+endmodule
+
+module clock_divider_u_turn #(parameter n = 27)(
+    input clk, 
+    input en,
+    input pause,
+    output clk_div
+);
+    reg [n:0] num = 0;
+    wire [n:0] next_num;
+
+    always@(posedge clk) begin
+        if(!en) begin
+            num <= 0;
+        end else begin
+            if(!pause) begin
+                num <= next_num;
+            end
+        end
+    end
+    assign next_num = (num != 160_000_000) ? (num + 1) : 0;
+    //assign clk_div = num[n];
+    assign clk_div = pause ? 0 : (num < 80_000_000) ? 0 : 1;
+endmodule
+
 module final_project(
     input clk,
     input rst,
@@ -128,21 +199,21 @@ module final_project(
         .obstacles_(IRSignBR)
     );
 
-    clock_divider #(.n(26)) G ( // turn_duration
+    clock_divider_turn #(.n(26)) G ( // turn_duration
         .clk(clk),
         .en(clk_turn_en), // add distance pause
         .pause(pause),  // pause the duration from keep counting if there's obstacle
         .clk_div(clk_turn)
     );
 
-    clock_divider #(.n(27)) H ( // u_turn_duration
+    clock_divider_u_turn #(.n(27)) H ( // u_turn_duration
         .clk(clk),
         .en(clk_u_turn_en), // add distance pause
         .pause(pause),  // pause the duration from keep counting if there's obstacle
         .clk_div(clk_u_turn)
     );
 
-    clock_divider #(.n(28)) I ( // rotate_duration
+    clock_divider_rotate #(.n(28)) I ( // rotate_duration
         .clk(clk),
         .en(clk_rotate_en), // add distance pause
         .pause(pause),  // pause the duration from keep counting if there's obstacle
@@ -279,7 +350,7 @@ module final_project(
                         clk_turn_en <= 0;
                         clk_u_turn_en <= 0;
                         clk_rotate_en <= 0;
-                    end else if(RxData == 247) begin    // turn left
+                    end else if(RxData == 247) begin    // turn left                //TRIALLL
                         clk_turn_en <= 1;        // start turn duration
                         clk_u_turn_en <= 0;
                         clk_rotate_en <= 0;
@@ -288,7 +359,7 @@ module final_project(
                             mode <= 3'b010;  // left
                         end else begin
                             mode <= 3'b000; //stop
-                            // mode <= 3'b011; //forward
+                            // mode <= 3'b011; //forward 
                         end
                         if(clk_turn) begin
                             clk_turn_en <= 0;
@@ -401,16 +472,24 @@ module final_project(
                         clk_u_turn_en <= 0;
                         clk_rotate_en <= 0;
                     end
-                    if(pause) begin
+                    if(pause || pause1) begin
                         // if(mode != 3'b011 && mode != 3'b000 && turnControl != 1'b1 && !IRSignBR && !IRSignBL) begin
                         if(mode != 3'b011 && mode != 3'b000 && turnControl != 1'b1) begin
                             if(!pause1) begin
                                 mode <= 3'b100; // backward
                             end else begin
+                                if(mode != 3'b100) begin
+                                    mode <= 3'b000;
+                                end
+                            end
+                        end else begin          
+                            if(pause && !pause1) begin
+                                if(mode != 3'b100) begin
+                                    mode <= 3'b000;
+                                end
+                            end else if(pause && pause1) begin
                                 mode <= 3'b000;
                             end
-                        end else begin
-                            mode <= 3'b000; //forward
                         end
                         clk_blink_en <= 1;
                         play_sound <= 1;
