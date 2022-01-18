@@ -320,6 +320,11 @@ module final_project(
                         clk_turn_en <= 0;
                         clk_u_turn_en <= 0;
                         clk_rotate_en <= 0;
+                        if(pause1) begin
+                            mode <= 3'b000;
+                            clk_blink_en <= 1;
+                            play_sound <= 1;
+                        end
                     end else if(RxData == 183) begin // u-turn
                         clk_turn_en <= 0;        // start turn duration
                         clk_u_turn_en <= 1;     // start u-turn duration
@@ -399,20 +404,16 @@ module final_project(
                     if(pause) begin
                         // if(mode != 3'b011 && mode != 3'b000 && turnControl != 1'b1 && !IRSignBR && !IRSignBL) begin
                         if(mode != 3'b011 && mode != 3'b000 && turnControl != 1'b1) begin
-                            mode <= 3'b100; // backward
+                            if(!pause1) begin
+                                mode <= 3'b100; // backward
+                            end else begin
+                                mode <= 3'b000;
+                            end
                         end else begin
                             mode <= 3'b000; //forward
                         end
-                        if(pause1) begin
-                            clk_blink_en <= 1;
-                            play_sound <= 1;
-                        end
-                        if(pause1) begin
-                            mode <= 3'b000;
-                        end
-                    end
-                    if(pause1 && mode == 3'b100) begin
-                        mode <= 3'b000;
+                        clk_blink_en <= 1;
+                        play_sound <= 1;
                     end
                 end
             endcase
