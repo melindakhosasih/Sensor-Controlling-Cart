@@ -11,7 +11,7 @@ module bluetooth (
 	parameter READ = 1'b1;
 
     reg [13:0] cnt;
-	reg [8:0] data;
+	reg [9:0] data;
 	reg [3:0] bit_cnt;
 	reg state;
 
@@ -38,14 +38,14 @@ module bluetooth (
 				end
 				READ : begin
 					cnt <= cnt + 1;
-					if(bit_cnt == 9) begin
+					if(bit_cnt == 10) begin
 						state <= IDLE;
 						cnt <= 0;
 						bit_cnt <= 0;
 					end else begin
 						if(cnt == bit_div) begin
 							cnt <= 0;
-							data <= {RxD, data[8:1]};
+							data <= {RxD, data[9:1]};
 							bit_cnt <= bit_cnt + 1;
 						end
 					end
