@@ -350,7 +350,7 @@ module final_project(
                         clk_turn_en <= 0;
                         clk_u_turn_en <= 0;
                         clk_rotate_en <= 0;
-                    end else if(RxData == 247) begin    // turn left                //TRIALLL
+                    end else if(RxData == 247) begin    // turn left          
                         clk_turn_en <= 1;        // start turn duration
                         clk_u_turn_en <= 0;
                         clk_rotate_en <= 0;
@@ -474,26 +474,67 @@ module final_project(
                     end
                     if(pause || pause1) begin
                         // if(mode != 3'b011 && mode != 3'b000 && turnControl != 1'b1 && !IRSignBR && !IRSignBL) begin
-                        if(mode != 3'b011 && mode != 3'b000 && turnControl != 1'b1) begin
-                            if(!pause1) begin
+                        // if(mode != 3'b011 && mode != 3'b000 && turnControl != 1'b1) begin
+                        //     if(!pause1) begin
+                        //         mode <= 3'b100; // backward
+                        //     end else begin
+                        //         if(mode != 3'b100) begin
+                        //             mode <= 3'b000;
+                        //         end
+                        //     end
+                        // end else begin          
+                        //     if(pause && !pause1) begin
+                        //         if(mode != 3'b100) begin
+                        //             mode <= 3'b000;
+                        //         end
+                        //     end else if(pause && pause1) begin
+                        //         mode <= 3'b000;
+                        //     end
+                        // end
+                        if(mode == 3'b011) begin
+                            if(!pause1 && pause) begin
                                 mode <= 3'b100; // backward
                             end else begin
-                                if(mode != 3'b100) begin
-                                    mode <= 3'b000;
-                                end
-                            end
-                        end else begin          
-                            if(pause && !pause1) begin
-                                if(mode != 3'b100) begin
-                                    mode <= 3'b000;
-                                end
-                            end else if(pause && pause1) begin
                                 mode <= 3'b000;
+                                // if(mode != 3'b100) begin
+                                // end
+                            end
+                        end else if(mode == 3'b100)begin          
+                            if(pause1) begin
+                                mode <= 3'b000;
+                                // if(mode != 3'b100) begin
+                                // end
+                            end else if(pause && pause1) begin
+                                // mode <= 3'b000;
                             end
                         end
                         clk_blink_en <= 1;
                         play_sound <= 1;
                     end
+                    // if(pause || pause1) begin
+                    //     // if(mode != 3'b011 && mode != 3'b000 && turnControl != 1'b1 && !IRSignBR && !IRSignBL) begin
+                    //     if(mode != 3'b011 && mode != 3'b000 && turnControl != 1'b1) begin
+                    //         if(!pause1) begin
+                    //             mode <= 3'b100; // backward
+                    //         end else begin
+                    //             if(mode != 3'b100) begin
+                    //                 mode <= 3'b000;
+                    //             end
+                    //         end
+                    //     end else begin          
+                    //         if(pause && !pause1) begin
+                    //             if(RxD != 111) begin
+                    //                 mode <= 3'b100;
+                    //             end else begin
+                    //                 mode <= 3'b000;
+                    //             end
+                    //         end else if(pause && pause1) begin
+                    //             mode <= 3'b000;
+                    //         end
+                    //     end
+                    //     clk_blink_en <= 1;
+                    //     play_sound <= 1;
+                    // end
                 end
             endcase
         end
