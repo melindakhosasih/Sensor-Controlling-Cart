@@ -226,23 +226,21 @@ set_property PACKAGE_PIN P18 [get_ports {audio_sdin}]
 # set_property PACKAGE_PIN L3 [get_ports {JXADC[1]}]
 #    set_property IOSTANDARD LVCMOS33 [get_ports {JXADC[1]}]
 ## Sch name = XA3_P
-# set_property PACKAGE_PIN M2 [get_ports {ble_tx}]
-#    set_property IOSTANDARD LVCMOS33 [get_ports {ble_tx}]
+set_property PACKAGE_PIN M2 [get_ports {IRSenseBR}]
+   set_property IOSTANDARD LVCMOS33 [get_ports {IRSenseBR}]
 ## Sch name = XA4_P
 set_property PACKAGE_PIN N2 [get_ports {IRSenseR}]
   set_property IOSTANDARD LVCMOS33 [get_ports {IRSenseR}]
-#   set_property PACKAGE_PIN N2 [get_ports {IRSenseBL}]
-#   set_property IOSTANDARD LVCMOS33 [get_ports {IRSenseBL}]
 #   set_property PULLUP true [get_ports ble_rx]
 ## Sch name = XA1_N
-# set_property PACKAGE_PIN K3 [get_ports {JXADC[4]}]
-#    set_property IOSTANDARD LVCMOS33 [get_ports {JXADC[4]}]
+# set_property PACKAGE_PIN K3 [get_ports {IRSenseBR}]
+#    set_property IOSTANDARD LVCMOS33 [get_ports {IRSenseBR}]
 ## Sch name = XA2_N
 # set_property PACKAGE_PIN M3 [get_ports {JXADC[5]}]
 #    set_property IOSTANDARD LVCMOS33 [get_ports {JXADC[5]}]
 ## Sch name = XA3_N
-# set_property PACKAGE_PIN M1 [get_ports {JXADC[6]}]
-#    set_property IOSTANDARD LVCMOS33 [get_ports {JXADC[6]}]
+# set_property PACKAGE_PIN M1 [get_ports {IRSenseBL}]
+#    set_property IOSTANDARD LVCMOS33 [get_ports {IRSenseBL}]
 ## Sch name = XA4_N
 set_property PACKAGE_PIN N1 [get_ports {IRSenseL}]
    set_property IOSTANDARD LVCMOS33 [get_ports {IRSenseL}]
@@ -329,7 +327,6 @@ set_property CFGBVS VCCO [current_design]
 #set_property IOSTANDARD LVCMOS33 [get_ports en]
 #set_property PACKAGE_PIN W16 [get_ports rst]
 #set_property IOSTANDARD LVCMOS33 [get_ports rst]
-
 
 
 
